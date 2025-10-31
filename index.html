@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 생태·환경 퀴즈 게임</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Gowun Dodum', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #a8edea, #fed6e3);
+    }
+
+    .quiz-container {
+      width: 90%;
+      max-width: 600px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 30px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8em;
+      color: #2e7d32;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .choice {
+      padding: 12px;
+      border: 2px solid #81c784;
+      border-radius: 12px;
+      background-color: #f1f8e9;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .choice:hover {
+      background-color: #c8e6c9;
+    }
+
+    .correct {
+      background-color: #a5d6a7 !important;
+      border-color: #2e7d32 !important;
+      color: #1b5e20;
+    }
+
+    .incorrect {
+      background-color: #ffcdd2 !important;
+      border-color: #c62828 !important;
+      color: #b71c1c;
+    }
+
+    .btn {
+      margin-top: 25px;
+      padding: 10px 20px;
+      background-color: #4caf50;
+      border: none;
+      color: white;
+      font-size: 1em;
+      border-radius: 12px;
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #388e3c;
+    }
+
+    .result {
+      text-align: center;
+    }
+
+    .score {
+      font-size: 2em;
+      color: #2e7d32;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>🌱 생태·환경 퀴즈</h1>
+    <div id="quiz">
+      <div class="question" id="question"></div>
+      <div class="choices" id="choices"></div>
+      <button class="btn" id="nextBtn">다음</button>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      { q: "지구의 평균 기온 상승을 일컫는 말은?", c: ["빙하기", "온난화", "냉각화", "산성화"], a: 1 },
+      { q: "이산화탄소를 가장 많이 흡수하는 생명체는?", c: ["해조류", "산호", "나무", "조류"], a: 2 },
+      { q: "플라스틱이 바다에 미치는 대표적 피해는?", c: ["온도 상승", "해류 변화", "미세플라스틱 오염", "빛 공해"], a: 2 },
+      { q: "지구 온실효과의 주요 원인은?", c: ["질소", "산소", "이산화탄소", "수소"], a: 2 },
+      { q: "재활용 마크 ♻️ 의 의미는?", c: ["에너지 절약", "자원 재사용 가능", "식품 등급 표시", "유기농 인증"], a: 1 },
+      { q: "멸종위기종 보호의 목적은?", c: ["경제 성장", "유전자 다양성 보존", "사람 수 증가", "도시 개발"], a: 1 },
+      { q: "기후변화의 주요 원인이 아닌 것은?", c: ["화석연료 사용", "산림 파괴", "태양광 발전", "공장 배출가스"], a: 2 },
+      { q: "탄소중립의 목표는?", c: ["이산화탄소 배출 제로", "산소 배출 증가", "온도 감소 10도", "바람 에너지 활용"], a: 0 },
+      { q: "오존층이 파괴되면 증가하는 것은?", c: ["자외선", "이산화탄소", "산소", "비"], a: 0 },
+      { q: "해양 생태계 보전을 위해 가장 중요한 행동은?", c: ["일회용품 줄이기", "바다 수온 상승", "조개 채취", "해변 개발"], a: 0 }
+    ];
+
+    let current = 0;
+    let score = 0;
+    const questionEl = document.getElementById("question");
+    const choicesEl = document.getElementById("choices");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function loadQuestion() {
+      const qData = quizData[current];
+      questionEl.textContent = `Q${current + 1}. ${qData.q}`;
+      choicesEl.innerHTML = "";
+
+      qData.c.forEach((choice, index) => {
+        const btn = document.createElement("div");
+        btn.className = "choice";
+        btn.textContent = choice;
+        btn.onclick = () => selectAnswer(btn, index);
+        choicesEl.appendChild(btn);
+      });
+      nextBtn.style.display = "none";
+    }
+
+    function selectAnswer(selected, index) {
+      const correct = quizData[current].a;
+      const allChoices = document.querySelectorAll(".choice");
+      allChoices.forEach(btn => btn.onclick = null); // prevent double click
+
+      if (index === correct) {
+        selected.classList.add("correct");
+        score++;
+      } else {
+        selected.classList.add("incorrect");
+        allChoices[correct].classList.add("correct");
+      }
+      nextBtn.style.display = "block";
+    }
+
+    nextBtn.onclick = () => {
+      current++;
+      if (current < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      const quiz = document.getElementById("quiz");
+      quiz.innerHTML = `
+        <div class="result">
+          <h2>결과</h2>
+          <div class="score">${score} / ${quizData.length}</div>
+          <p>${score >= 8 ? "환경 지킴이네요! 🌍" : score >= 5 ? "좋아요, 조금만 더 노력해요 🌱" : "조금 더 공부해볼까요? 🌿"}</p>
+          <button class="btn" onclick="restart()">다시하기</button>
+        </div>`;
+    }
+
+    function restart() {
+      current = 0;
+      score = 0;
+      loadQuestion();
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
